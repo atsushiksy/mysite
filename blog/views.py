@@ -30,7 +30,7 @@ class PostCreateView(LoginRequiredMixin,CreateView):
 
     model = Post
 
-class PostUpdateView(LoginRequiredMixin,CreateView):
+class PostUpdateView(LoginRequiredMixin,UpdateView):
     login_url = '/login/'
     redirect_field_name = 'blog/post_detail.html'
     form_class = PostForm
@@ -54,7 +54,9 @@ class DrafitListView(LoginRequiredMixin,ListView):
 ##############################################################################
 @login_required
 def post_publish(request,pk):
+    print( "post_publish pk = {}".format(pk))
     post = get_object_or_404(Post,pk=pk)
+    print( "got post : {}".format(post.title))
     post.publish()
     return redirect('post_detail', pk=post.pk)
 
@@ -63,15 +65,17 @@ def post_publish(request,pk):
 def add_comment_to_post(request,pk):
     post = get_object_or_404(Post,pk=pk)
     if request.method == 'POST':
+        print("get POST on add_comment_to_post")
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
             comment.save()
-            return redirect('post_detail', pk=post.pk)
+            print( "comment saved")
+            return redirect('post_detail', pk=comment.post.pk)
     else:
         form = CommentForm()
-    return render(request, 'blog/comment_form.html', {'form':form})
+        return render(request, 'blog/comment_form.html', {'form':form})
 
 @login_required
 def comment_approve(request,pk):
